@@ -1,5 +1,7 @@
 # Claude Code Gateway
 
+[繁體中文版 README](README_zh-TW.md)
+
 > **Disclaimer:** This project does **not** extract or use OAuth tokens. It runs the official Claude Code CLI binary inside a Docker container as a subprocess. This may still fall outside Anthropic's intended usage of Claude Code subscriptions. Review [Anthropic's Consumer Terms of Service](https://www.anthropic.com/legal/consumer-terms) before using. **Use at your own risk.**
 
 > Turn your Claude Code subscription into a secured API endpoint for any AI agent -- no separate Anthropic API key needed.
