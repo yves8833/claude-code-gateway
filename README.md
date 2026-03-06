@@ -55,9 +55,42 @@ Or set your own:
 GATEWAY_API_KEY=your-secret-key-here
 ```
 
-### 3. Ensure Claude CLI is authenticated
+### 3. Sync Claude CLI credentials
 
-Make sure `~/.claude/.credentials.json` exists on your host. If not, run `claude` once and complete the login flow.
+Newer versions of Claude CLI store credentials in macOS Keychain instead of a file. The included sync script exports them for Docker:
+
+```bash
+# First time: run claude and complete the login flow if you haven't already
+claude
+
+# Sync credentials from Keychain to file
+./scripts/sync-credentials.sh
+```
+
+To enable automatic syncing (every hour + on login):
+
+```bash
+# Install the LaunchAgent
+cp scripts/com.claude-gateway.sync-credentials.plist ~/Library/LaunchAgents/
+# Edit the plist to update paths if your project directory differs
+launchctl load ~/Library/LaunchAgents/com.claude-gateway.sync-credentials.plist
+```
+
+Manage the LaunchAgent:
+
+```bash
+# Check status
+launchctl list | grep claude-gateway
+
+# Manual trigger
+./scripts/sync-credentials.sh
+
+# View logs
+cat logs/sync-credentials.log
+
+# Disable
+launchctl unload ~/Library/LaunchAgents/com.claude-gateway.sync-credentials.plist
+```
 
 ### 4. Generate HTTPS certificates (optional but recommended)
 
@@ -104,6 +137,7 @@ This fork adds several security layers over the original project:
 | **CORS** | Browser extensions (e.g. Immersive Translate) can connect |
 | **localhost binding** | `127.0.0.1:8080/:8443` -- not accessible from network |
 | **Minimal credential mount** | Only `.credentials.json`, not the entire `~/.claude` directory |
+| **Credential auto-sync** | LaunchAgent syncs Keychain → file every hour, restarts container on change |
 | **Health endpoint bypass** | `/health` accessible without auth for monitoring |
 
 ### Why minimal mount matters
