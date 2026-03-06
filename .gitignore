@@ -21,6 +21,9 @@ venv/
 # Node
 node_modules/
 
+# TLS certificates
+certs/
+
 # OS
 .DS_Store
 Thumbs.db

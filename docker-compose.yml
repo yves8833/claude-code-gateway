@@ -14,8 +14,10 @@ services:
     image: nginx:alpine
     ports:
       - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8443:8443"
     volumes:
       - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./certs:/etc/nginx/certs:ro
     environment:
       - GATEWAY_API_KEY=${GATEWAY_API_KEY:-ccg-secret-change-me}
     depends_on:

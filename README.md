@@ -16,8 +16,9 @@ This fork adds an **nginx reverse proxy** with API key authentication and securi
 Client (Cline / Aider / Langfuse / ...)
   │  Authorization: Bearer <GATEWAY_API_KEY>
   ▼
-nginx (127.0.0.1:8080)
+nginx (127.0.0.1:8080 HTTP / :8443 HTTPS)
   │  ├─ /health → bypass auth
+  │  ├─ CORS headers for browser extensions
   │  └─ /* → verify Bearer token
   ▼
 FastAPI (api:8080, internal only)
@@ -58,7 +59,19 @@ GATEWAY_API_KEY=your-secret-key-here
 
 Make sure `~/.claude/.credentials.json` exists on your host. If not, run `claude` once and complete the login flow.
 
-### 4. Start
+### 4. Generate HTTPS certificates (optional but recommended)
+
+```bash
+# Install mkcert (macOS)
+brew install mkcert
+mkcert -install
+
+# Generate trusted local certs
+mkdir -p certs
+mkcert -cert-file certs/localhost.pem -key-file certs/localhost-key.pem localhost 127.0.0.1
+```
+
+### 5. Start
 
 ```bash
 docker compose up --build -d
@@ -70,8 +83,12 @@ Verify:
 # Health check (no auth required)
 curl http://localhost:8080/health
 
-# Test with API key
+# Test HTTP
 curl http://localhost:8080/v1/models \
+  -H "Authorization: Bearer YOUR_API_KEY"
+
+# Test HTTPS
+curl https://localhost:8443/v1/models \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -82,8 +99,10 @@ This fork adds several security layers over the original project:
 | Layer | Detail |
 |-------|--------|
 | **nginx reverse proxy** | API service not directly exposed |
+| **HTTPS (TLS)** | Port 8443 with mkcert trusted certificates |
 | **API key authentication** | All requests require `Authorization: Bearer <key>` |
-| **localhost binding** | `127.0.0.1:8080` -- not accessible from network |
+| **CORS** | Browser extensions (e.g. Immersive Translate) can connect |
+| **localhost binding** | `127.0.0.1:8080/:8443` -- not accessible from network |
 | **Minimal credential mount** | Only `.credentials.json`, not the entire `~/.claude` directory |
 | **Health endpoint bypass** | `/health` accessible without auth for monitoring |
 
@@ -112,11 +131,23 @@ For any platform, use these settings:
 
 | Setting | Value |
 |---------|-------|
-| **Base URL** | `http://localhost:8080/v1` |
+| **Base URL (HTTP)** | `http://localhost:8080/v1` |
+| **Base URL (HTTPS)** | `https://localhost:8443/v1` |
 | **API Key** | Your `GATEWAY_API_KEY` value |
 | **Adapter / Provider** | OpenAI |
 
 > If connecting from another Docker container, use `http://host.docker.internal:8080/v1` as the base URL.
+> Browser extensions require HTTPS: use `https://localhost:8443/v1`.
+
+### Immersive Translate (Browser Extension)
+
+In Immersive Translate settings, choose **OpenAI Custom** service:
+
+- API URL: `https://localhost:8443/v1/chat/completions`
+- API Key: your `GATEWAY_API_KEY`
+- Model: `claude-haiku-4-5-20251001` (recommended for translation)
+
+> Browser extensions must use HTTPS (port 8443). HTTP will fail due to security restrictions.
 
 ### Langfuse
 
