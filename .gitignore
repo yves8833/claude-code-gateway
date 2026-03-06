@@ -24,6 +24,9 @@ node_modules/
 # TLS certificates
 certs/
 
+# Logs
+logs/
+
 # OS
 .DS_Store
 Thumbs.db
