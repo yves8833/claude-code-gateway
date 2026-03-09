@@ -247,6 +247,25 @@ llm = ChatOpenAI(
 | `CCG_DEFAULT_MAX_TURNS` | `10` | 最大對話回合數 |
 | `CCG_CLAUDE_CLI_TIMEOUT` | `300` | CLI 逾時秒數 |
 
+## 管理 Gateway
+
+```bash
+# 關閉 Gateway
+docker compose down
+
+# 關閉 Gateway + 停用自動同步
+docker compose down
+launchctl unload ~/Library/LaunchAgents/com.claude-gateway.sync-credentials.plist
+
+# 重新啟動
+docker compose up -d
+launchctl load ~/Library/LaunchAgents/com.claude-gateway.sync-credentials.plist
+
+# 查看日誌
+docker compose logs -f        # Gateway 日誌
+cat logs/sync-credentials.log  # 憑證同步日誌
+```
+
 ## 已知限制
 
 - **不支援 tool calling**——OpenAI 格式的 function/tool call 不支援

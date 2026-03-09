@@ -249,6 +249,25 @@ All settings use the `CCG_` prefix in `.env`:
 | `CCG_DEFAULT_MAX_TURNS` | `10` | Max conversation turns |
 | `CCG_CLAUDE_CLI_TIMEOUT` | `300` | CLI timeout in seconds |
 
+## Managing the Gateway
+
+```bash
+# Stop Gateway
+docker compose down
+
+# Stop Gateway + disable auto-sync
+docker compose down
+launchctl unload ~/Library/LaunchAgents/com.claude-gateway.sync-credentials.plist
+
+# Restart Gateway
+docker compose up -d
+launchctl load ~/Library/LaunchAgents/com.claude-gateway.sync-credentials.plist
+
+# View logs
+docker compose logs -f        # Gateway logs
+cat logs/sync-credentials.log  # Credential sync logs
+```
+
 ## Known Limitations
 
 - **No tool calling** -- function/tool calls in the OpenAI format are not supported
